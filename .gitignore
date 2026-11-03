@@ -1,0 +1,6 @@
+.env
+lrcr.db
+__pycache__/
+.env.txt
+venv/
+.venv/

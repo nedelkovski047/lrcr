@@ -1,0 +1,36 @@
+# LRCR runtime dependencies.
+#
+# Pinned (==) = every package below except pypdf/apscheduler is pinned to a version resolved and
+# installed cleanly against the real project files (verified with `python check_imports.py`).
+# Ranges (>=) on pypdf/apscheduler = their code hasn't been reviewed against this exact pin; if you
+# bump them, rerun check_imports.py and watch for behavior changes across major versions.
+
+# --- web framework ---------------------------------------------------------------------------
+fastapi==0.141.1
+uvicorn[standard]==0.46.0
+pydantic==2.13.3
+python-multipart==0.0.26        # UploadFile / Form in /api/v1/upload-gazette
+
+# --- database: async PostgreSQL in production, SQLite for local development --------------------
+SQLAlchemy[asyncio]==2.0.54     # [asyncio] also installs greenlet
+asyncpg==0.31.0                 # the Neon / Supabase driver (DATABASE_URL)
+aiosqlite==0.22.1               # only used when DATABASE_URL is not set
+
+# --- HTTP, scraping, PDF -----------------------------------------------------------------------
+aiohttp==3.14.3
+httpx==0.28.1                   # poller.py's gazette-index/PDF client (separate from aiohttp above)
+beautifulsoup4==4.14.3
+playwright==1.63.0              # MUST equal the version in the Dockerfile's FROM line
+pypdf>=3.17
+
+# --- background jobs (module not reviewed: confirm with check_imports.py) -----------------------
+apscheduler>=3.10,<4            # poller.py uses the 3.x API (AsyncIOScheduler, get_job().next_run_time)
+
+# --- outgoing e-mail: Resend API (replaces SMTP / aiosmtplib) ------------------------------------
+resend==2.47.0                  # mailer.py; needs RESEND_API_KEY
+email-validator==2.3.0          # required by pydantic's EmailStr (foia_generator.py); without it the
+                                 # app fails to IMPORT (crashes at boot, not just at send time)
+
+# --- Gemini (Tier 1) ---------------------------------------------------------------------------
+google-genai==2.25.0            # pdf_parser.py: `from google import genai` (lazy import, only used
+                                 # when a gazette is actually analyzed)

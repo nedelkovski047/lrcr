@@ -1,0 +1,48 @@
+# Render Blueprint for the Local Regulatory Change Radar (free web service).
+#
+# Put this file, Dockerfile, requirements.txt and all *.py files at the ROOT of the GitHub repo.
+# (If they live in a subfolder, add `rootDir: <subfolder>` under the service.)
+# Render dashboard -> New -> Blueprint -> pick the repo. Render then asks for every `sync: false` value.
+#
+# Values marked `sync: false` are secrets: they are NEVER stored in this file.
+
+services:
+  - type: web
+    name: lrcr
+    runtime: docker
+    plan: free
+    region: frankfurt            # keep it close to your Neon/Supabase project (eu-central-1)
+    dockerfilePath: ./Dockerfile
+    autoDeployTrigger: commit
+
+    # healthCheckPath is deliberately NOT set. Every route (incl. /healthz) sits behind Basic Auth
+    # and answers 401 to Render's probe, which Render would count as unhealthy. Without it Render
+    # only checks that the port is open.
+
+    envVars:
+      # --- required ----------------------------------------------------------------------------
+      - key: DATABASE_URL        # Neon: the "pooled" string. Supabase: the pooler string. Paste as shown.
+        sync: false
+      - key: ADMIN_USER          # Basic-auth username for every endpoint (no ':' in it)
+        sync: false
+      - key: ADMIN_PASSWORD      # >= 12 chars. Generated once by Render; read it in Dashboard -> Environment
+        generateValue: true
+      - key: GEMINI_API_KEY      # Tier 1 (gazette analysis)
+        sync: false
+      - key: RESEND_API_KEY      # outgoing FOIA e-mail (Resend dashboard -> API Keys)
+        sync: false
+
+      # --- safety / sizing ---------------------------------------------------------------------
+      - key: LRCR_EMAIL_DRY_RUN  # "true" = approving a draft only logs it. Set "false" only when Resend works.
+        value: "true"
+      - key: LRCR_MAX_CONCURRENT_SCRAPES   # free instance has 512 MB RAM; Chromium is hungry
+        value: "1"
+
+      # --- add these when you are ready to send real e-mail (dashboard -> Environment) ---------
+      # LRCR_SENDER_NAME, LRCR_SENDER_EMAIL, LRCR_SENDER_ADDRESS, LRCR_SENDER_PHONE = who the FOIA letter is
+      #   from. foia_generator.py prints them in every draft; live sending is refused while they are unset.
+      #   (The app starts without them; drafts then contain "[SET LRCR_SENDER_...]" placeholders.)
+      # LRCR_REPLY_TO = a mailbox you read (defaults to LRCR_SENDER_EMAIL; replies to onboarding@resend.dev go nowhere).
+      # LRCR_MAIL_FROM = "Name <address@your-verified-domain>" once you verify a domain in Resend; the
+      # default onboarding@resend.dev can only deliver to your own Resend account address.
+      # Then change LRCR_EMAIL_DRY_RUN to "false".
