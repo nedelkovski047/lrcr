@@ -2,7 +2,7 @@
 
 LRCR monitors official gazettes for regulatory changes, checks whether the documents those changes refer to are publicly available, and, when a document cannot be found online, drafts a Freedom of Information (FOIA) request for a person to review. **Nothing is e-mailed without a human approving it.**
 
-![LRCR review page](docs/review-page.png)
+<img width="960" height="1602" alt="review-page" src="https://github.com/user-attachments/assets/107ab129-bdb6-4611-9468-b070f1cbd5e9" />
 
 ## How it works
 
