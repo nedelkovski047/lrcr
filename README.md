@@ -4,8 +4,6 @@ LRCR monitors official gazettes for regulatory changes, checks whether the docum
 
 ![LRCR review page](docs/review-page.png)
 
-*The review queue, rendered with sample data.*
-
 ## How it works
 
 1. **Polling.** A scheduled job (APScheduler) looks for new gazette PDFs.
